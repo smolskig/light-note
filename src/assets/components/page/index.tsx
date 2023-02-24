@@ -1,55 +1,56 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import { Row } from "../row";
+import { useEffect, useRef, useState } from "react";
+import { placeCaretAtEnd } from "../../../utils";
+import { Row } from "../row/index";
 
 export const Page = () => {
-  const [rows, setRows] = useState([
-    {
-      selected: true,
-      id: 0,
-    },
-  ]);
+  const [rows, setRows] = useState([{ content: "" }]);
+  const [action, setAction] = useState("");
 
   const pageRef = useRef(null);
 
-  const handleAddRow = (row) => {
-    const deselectedRows = rows.map((row) => ({ ...row, selected: false }));
+  const handleKeyDown = () => {};
 
-    setRows([...deselectedRows, row]);
+  const getFocusedRowIndex = (): number => {
+    const active = document.activeElement;
+    return Array.prototype.slice.call(pageRef.current.children).indexOf(active);
   };
 
-  const handleRemoveRow = (rowId) => {
-    const deselectedRows = rows.map((row) => ({ ...row, selected: false }));
-    let idOfPreviousRow: number;
+  const handleAddRow = (newRow: any) => {
+    const newRows = [...rows, newRow];
+    setAction("addRow");
+    setRows(newRows);
+  };
 
-    rows.forEach((row, index) => {
-      if (row.id === rowId) {
-        idOfPreviousRow = deselectedRows[index - 1].id;
+  const handleRemoveRow = () => {
+    if (rows.length > 1) {
+      setAction("");
+      const index = getFocusedRowIndex();
+      const newRows = structuredClone(rows);
+
+      newRows.splice(index, 1);
+
+      pageRef.current.children[index - 1].focus();
+      placeCaretAtEnd(pageRef.current.children[index - 1]);
+      setRows(newRows);
+    }
+  };
+
+  const handleNextRowFocus = () => {
+    const index = getFocusedRowIndex() + 1;
+    pageRef.current.children[index].focus();
+    placeCaretAtEnd(pageRef.current.children[index]);
+  };
+
+  useEffect(() => {
+    if (action) {
+      if (action === "addRow") {
+        handleNextRowFocus();
       }
-    });
-
-    const filteredRows = deselectedRows
-      .filter((item) => item.id !== rowId)
-      .map((row) => {
-        if (row.id === idOfPreviousRow) {
-          row.selected = true;
-        }
-
-        return row;
-      });
-
-    setRows(filteredRows);
-  };
-
-  useLayoutEffect(() => {
-    const element = pageRef.current;
-    const getSelectedRow = rows.filter((row) => row.selected)[0];
-    console.log("selectedRow", getSelectedRow);
-
-    element.children[getSelectedRow.id].focus();
+    }
   }, [rows]);
 
   return (
-    <div ref={pageRef}>
+    <div ref={pageRef} onKeyDown={handleKeyDown}>
       {rows.map((row, index) => (
         <Row
           rowData={row}

@@ -1,56 +1,45 @@
 import { useRef } from "react";
+import { placeCaretAtEnd } from "../../../utils";
 
-export const Row = ({ rowData, id, handleAddRow, handleRemoveRow }: any) => {
+export const Row = ({ rowData, handleAddRow, handleRemoveRow }: any) => {
   const rowRef = useRef(null);
 
-  const placeCaretAtEnd = (el) => {
-    el.focus();
-    if (
-      typeof window.getSelection != "undefined" &&
-      typeof document.createRange != "undefined"
-    ) {
-      var range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    } else if (typeof document.body.createTextRange != "undefined") {
-      var textRange = document.body.createTextRange();
-      textRange.moveToElementText(el);
-      textRange.collapse(false);
-      textRange.select();
+  const handleEnterKey = (e: any) => {
+    e.preventDefault();
+    const element = rowRef.current;
+
+    if (element) {
+      if (e.shiftKey) {
+        element.innerHTML += `<br>`;
+        placeCaretAtEnd(element);
+        return false;
+      }
+
+      handleAddRow({ content: "" });
+    }
+
+    return false;
+  };
+
+  const handleBackspaceKey = (e: any) => {
+    const element = rowRef.current;
+
+    if (element.innerHTML === `<br>`) {
+      handleRemoveRow();
     }
   };
 
   const handleKeyDown = (e: any) => {
-    const element = rowRef.current;
-    console.log(element);
-
-    e.persist();
-
     if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddRow({
-        selected: true,
-        id: id + 1,
-      });
-
-      if (e.shiftKey) {
-        element.innerHTML += `<br>`;
-
-        placeCaretAtEnd(element);
-      }
-      return false;
-    }
-
-    if (e.key === "Backspace") {
-      if (rowData.id !== 0 && element.innerHTML === `<br>`) {
-        handleRemoveRow(rowData.id);
-      }
+      handleEnterKey(e);
     }
   };
 
+  const handleKeyUp = (e) => {
+    if (e.key === "Backspace") {
+      handleBackspaceKey(e);
+    }
+  };
   return (
     <div
       ref={rowRef}
@@ -64,7 +53,8 @@ export const Row = ({ rowData, id, handleAddRow, handleRemoveRow }: any) => {
       }}
       contentEditable
       onKeyDown={handleKeyDown}
-      dangerouslySetInnerHTML={{ __html: "<br>" }}
+      onKeyUp={handleKeyUp}
+      dangerouslySetInnerHTML={{ __html: `${rowData.content}<br>` }}
     ></div>
   );
 };

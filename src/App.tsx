@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Page } from "./assets/components/page";
+import { Page } from "./assets/components/page/index";
 
 function App() {
   return <Page></Page>;
