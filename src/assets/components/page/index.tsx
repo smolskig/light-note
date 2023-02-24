@@ -8,7 +8,17 @@ export const Page = () => {
 
   const pageRef = useRef(null);
 
-  const handleKeyDown = () => {};
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowUp") {
+      const index = getFocusedRowIndex() - 1;
+      handleRowFocus(index);
+    }
+
+    if (e.key === "ArrowDown") {
+      const index = getFocusedRowIndex() + 1;
+      handleRowFocus(index);
+    }
+  };
 
   const getFocusedRowIndex = (): number => {
     const active = document.activeElement;
@@ -29,18 +39,22 @@ export const Page = () => {
 
       newRows.splice(index, 1);
 
-      pageRef.current.children[index - 1].focus();
-      placeCaretAtEnd(pageRef.current.children[index - 1]);
+      handleRowFocus(index - 1);
       setRows(newRows);
     }
   };
 
   const handleNextRowFocus = () => {
     const index = getFocusedRowIndex() + 1;
-    pageRef.current.children[index].focus();
-    placeCaretAtEnd(pageRef.current.children[index]);
+    handleRowFocus(index);
   };
 
+  const handleRowFocus = (index) => {
+    if (pageRef.current.children[index]) {
+      pageRef.current.children[index].focus();
+      placeCaretAtEnd(pageRef.current.children[index]);
+    }
+  };
   useEffect(() => {
     if (action) {
       if (action === "addRow") {
@@ -50,7 +64,11 @@ export const Page = () => {
   }, [rows]);
 
   return (
-    <div ref={pageRef} onKeyDown={handleKeyDown}>
+    <div
+      ref={pageRef}
+      onKeyDown={handleKeyDown}
+      style={{ display: "flex", flexDirection: "column", gap: 10 }}
+    >
       {rows.map((row, index) => (
         <Row
           rowData={row}
