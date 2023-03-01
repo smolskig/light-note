@@ -1,7 +1,12 @@
 import { useRef } from "react";
-import { placeCaretAtEnd } from "../../../utils";
+import { placeCaretAtEnd } from "../../utils";
 
-export const Row = ({ rowData, handleAddRow, handleRemoveRow }: any) => {
+export const Row = ({
+  rowData,
+  handleAddRow,
+  handleRemoveRow,
+  handleChange,
+}: any) => {
   const rowRef = useRef(null);
 
   const handleEnterKey = (e: any) => {
@@ -10,8 +15,8 @@ export const Row = ({ rowData, handleAddRow, handleRemoveRow }: any) => {
 
     if (element) {
       if (e.shiftKey) {
-        element.innerHTML += `<br>`;
-        placeCaretAtEnd(element);
+        // element.innerHTML += `<br>`;
+        // placeCaretAtEnd(element);
         return false;
       }
 
@@ -23,22 +28,28 @@ export const Row = ({ rowData, handleAddRow, handleRemoveRow }: any) => {
 
   const handleBackspaceKey = (e: any) => {
     const element = rowRef.current;
-
-    if (element.innerHTML === `<br>`) {
+    if (element.innerHTML === "") {
+      e.preventDefault();
       handleRemoveRow();
     }
   };
 
   const handleKeyDown = (e: any) => {
+    handleChange(e.target.innerHTML);
+
     if (e.key === "Enter") {
       handleEnterKey(e);
+    }
+    if (e.key === "Backspace") {
+      handleBackspaceKey(e);
     }
   };
 
   const handleKeyUp = (e) => {
-    if (e.key === "Backspace") {
-      handleBackspaceKey(e);
-    }
+    e.preventDefault();
+  };
+  const handleFocus = (e) => {
+    placeCaretAtEnd(e.target);
   };
   return (
     <div
@@ -54,7 +65,8 @@ export const Row = ({ rowData, handleAddRow, handleRemoveRow }: any) => {
       contentEditable
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
-      dangerouslySetInnerHTML={{ __html: `${rowData.content}<br>` }}
+      onFocus={handleFocus}
+      dangerouslySetInnerHTML={{ __html: `${rowData.content}` }}
     ></div>
   );
 };

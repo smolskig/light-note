@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { placeCaretAtEnd } from "../../../utils";
 import { Row } from "../row/index";
 
 export const Page = () => {
@@ -10,11 +9,13 @@ export const Page = () => {
 
   const handleKeyDown = (e) => {
     if (e.key === "ArrowUp") {
+      e.preventDefault();
       const index = getFocusedRowIndex() - 1;
       handleRowFocus(index);
     }
 
     if (e.key === "ArrowDown") {
+      e.preventDefault();
       const index = getFocusedRowIndex() + 1;
       handleRowFocus(index);
     }
@@ -44,21 +45,25 @@ export const Page = () => {
     }
   };
 
-  const handleNextRowFocus = () => {
-    const index = getFocusedRowIndex() + 1;
-    handleRowFocus(index);
-  };
-
   const handleRowFocus = (index) => {
     if (pageRef.current.children[index]) {
       pageRef.current.children[index].focus();
-      placeCaretAtEnd(pageRef.current.children[index]);
     }
   };
+
+  const handleChange = (e) => {
+    const index = getFocusedRowIndex();
+    let newRows = rows;
+
+    newRows[index].content = e;
+    setRows(newRows);
+  };
+
   useEffect(() => {
     if (action) {
       if (action === "addRow") {
-        handleNextRowFocus();
+        const index = getFocusedRowIndex() + 1;
+        handleRowFocus(index);
       }
     }
   }, [rows]);
@@ -76,6 +81,7 @@ export const Page = () => {
           id={index}
           handleAddRow={handleAddRow}
           handleRemoveRow={handleRemoveRow}
+          handleChange={handleChange}
         ></Row>
       ))}
     </div>
